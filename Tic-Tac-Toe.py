@@ -73,8 +73,10 @@ def switch_player(token):
 
     return token
 
-def MiniMax(node, maximisingPlayer):
-    board = node
+def MiniMax(board, maximisingPlayer):
+
+    player = "O"
+    opponent = "X"
 
     # if node is a terminal node then return value of board
     score = TicTacToe.evaluate(board)
@@ -91,18 +93,18 @@ def MiniMax(node, maximisingPlayer):
         max_value = -math.inf
         for i in board:
             if board[i] == " ":
-                board[i] = "X"
-                max_value = max(max_value, MiniMax(board, False))
-                board[i] = " "
+                child = board.copy()
+                child[i] = player
+                max_value = max(max_value, MiniMax(child, False))
         return max_value
 
     else:
         min_value = math.inf
         for i in board:
             if board[i] == " ":
-                board[i] = "O"
-                min_value = min(min_value, MiniMax(board, True))
-                board[i] = " "
+                child = board.copy()
+                child[i] = opponent
+                min_value = min(min_value, MiniMax(child, True))
         return min_value
 
 
@@ -113,8 +115,8 @@ def find_best_move(board):
     for x in range(1, 10):
         if board[x] == " ":
             board[x] = "O"
-            value = MiniMax(board, True)
-            print("Val: " +str(value) )
+            value = MiniMax(board, False)
+            #print("Val: " +str(value) )
             board[x] = " "
             if value > bestVal:
                 bestVal = value
@@ -141,11 +143,9 @@ def main():
                 position = find_best_move(board)
                 board[position] = token
 
-            print("pos " + str(position))
-
             TicTacToe.print_board(board)
             score = TicTacToe.evaluate(board)
-            print("Score" + str(score))
+            #print("Score" + str(score))
 
             if (score > 0 or score < 0):
                 print("Player {} has won the game!".format(token))
@@ -160,7 +160,7 @@ def main():
 
     restart = input("Play again(y/n)? ")
 
-    if restart == "y":
+    if restart == 'y':
         main()
 
 main()
