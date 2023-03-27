@@ -1,3 +1,5 @@
+import math
+
 class TicTacToe:
     
     @staticmethod
@@ -17,21 +19,6 @@ class TicTacToe:
         print("-------------")
         print("| " + board[7] + " | " + board[8] + " | " + board[9] + " |")
 
-    @staticmethod
-    def check_winner (board):
-        winner = False
-        if (((board [1] != " ") and (board [1] == board [2] == board [3])) or
-        ((board [4] != " ") and (board[4] == board [5] == board [6])) or 
-        ((board [7] != " ") and (board[7] == board [8] == board [9])) or
-        ((board [1] != " ") and (board[1] == board [4] == board [7])) or
-        ((board [2] != " ") and (board[2] == board [5] == board [8])) or 
-        ((board [3] != " ") and (board[3] == board [6] == board [9])) or
-        ((board [1] != " ") and (board[1] == board [5] == board [9])) or 
-        ((board [3] != " ") and (board[3] == board [5] == board [7]))):
-            winner = True
-
-        return winner
-
     @staticmethod 
     def is_board_full(board):
     
@@ -42,7 +29,7 @@ class TicTacToe:
         return True
 
     @staticmethod
-    def make_move(board, pos, token):
+    def make_human_move(board, pos, token):
         move_successful = True
         if board[pos] == " ":
             board[pos] = token
@@ -50,6 +37,33 @@ class TicTacToe:
             print("Space is already occupied.")
             move_successful = False
         return board, move_successful
+
+    @staticmethod
+    def evaluate(board):
+
+        for i in range(1, 8, 3): #1, 4, 7
+
+            if ((board [i] != " ") and (board [i] == board [i+1] == board [i+2])):
+                if board[i] == "O":
+                    return 10
+                elif board[i] == "X":
+                    return -10
+
+        for i in range(1, 4):
+            if ((board [i] != " ") and (board[i] == board [i+3] == board [i+6])):
+                if board[i] == "O":
+                    return 10
+                elif board[i] == "X":
+                    return -10
+
+        if (((board [5] != " ") and (board[1] == board [5] == board [9])) or
+        ((board[3] == board [5] == board [7]))):
+            if board[5] == "O":
+                return 10
+            elif board[5] == "X":
+                return -10 
+
+        return 0
 
 def switch_player(token):
     if token == "O":
@@ -59,30 +73,81 @@ def switch_player(token):
 
     return token
 
-def MiniMax(board):
+def MiniMax(node, maximisingPlayer):
+    board = node
+
+    # if node is a terminal node then return value of board
+    score = TicTacToe.evaluate(board)
+    if  score == 10:
+        return 10 
+
+    if score == -10:
+        return -10 
+
+    if TicTacToe.is_board_full(board):
+        return 0
+    
+    if maximisingPlayer:
+        max_value = -math.inf
+        for i in board:
+            if board[i] == " ":
+                board[i] = "X"
+                max_value = max(max_value, MiniMax(board, False))
+                board[i] = " "
+        return max_value
+
+    else:
+        min_value = math.inf
+        for i in board:
+            if board[i] == " ":
+                board[i] = "O"
+                min_value = min(min_value, MiniMax(board, True))
+                board[i] = " "
+        return min_value
+
+
+def find_best_move(board):
+    bestVal = -math.inf 
+    bestMove = -1
+    
+    for x in range(1, 10):
+        if board[x] == " ":
+            board[x] = "O"
+            value = MiniMax(board, True)
+            print("Val: " +str(value) )
+            board[x] = " "
+            if value > bestVal:
+                bestVal = value
+                bestMove = x
+
+    return bestMove
 
 def main():
     
     print("\n" +"Welcome to Tic-Tac-Toe!" +"\n")
     board = TicTacToe.create_board()
     TicTacToe.print_board(board)
-    token = "O"
+    token = "X"
 
     while True:
         if not TicTacToe.is_board_full(board):
 
             print("Player {}'s turn.".format(token))
-            position = int(input("Enter a number from 1 to 9 to make your move: "))
 
-            if token == 'O':
-                board, move_successful = TicTacToe.make_move(board, position, token)
+            if token == 'X':
+                position = int(input("Enter a number from 1 to 9 to make your move: "))
+                board, move_successful = TicTacToe.make_human_move(board, position, token)
             else:
-                MiniMax(board)
+                position = find_best_move(board)
+                board[position] = token
+
+            print("pos " + str(position))
 
             TicTacToe.print_board(board)
-            winner = TicTacToe.check_winner(board)
+            score = TicTacToe.evaluate(board)
+            print("Score" + str(score))
 
-            if winner:
+            if (score > 0 or score < 0):
                 print("Player {} has won the game!".format(token))
                 break
 
@@ -95,7 +160,7 @@ def main():
 
     restart = input("Play again(y/n)? ")
 
-    if restart == "y" or "Y":
+    if restart == "y":
         main()
 
 main()
