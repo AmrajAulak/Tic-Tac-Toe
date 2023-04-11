@@ -73,7 +73,7 @@ def switch_player(token):
 
     return token
 
-def MiniMax(board, maximisingPlayer):
+def MiniMax(board, maximisingPlayer, alpha, beta):
 
     player = "O"
     opponent = "X"
@@ -95,7 +95,11 @@ def MiniMax(board, maximisingPlayer):
             if board[i] == " ":
                 child = board.copy()
                 child[i] = player
-                max_value = max(max_value, MiniMax(child, False))
+                max_value = max(max_value, MiniMax(child, False, alpha, beta))
+                alpha = max(alpha, max_value)
+                if (alpha >= beta):
+                    break
+
         return max_value
 
     else:
@@ -104,7 +108,11 @@ def MiniMax(board, maximisingPlayer):
             if board[i] == " ":
                 child = board.copy()
                 child[i] = opponent
-                min_value = min(min_value, MiniMax(child, True))
+                min_value = min(min_value, MiniMax(child, True, alpha, beta))
+                beta = min(beta, min_value)
+                if (alpha >= beta):
+                    break
+
         return min_value
 
 
@@ -115,7 +123,7 @@ def find_best_move(board):
     for x in range(1, 10):
         if board[x] == " ":
             board[x] = "O"
-            value = MiniMax(board, False)
+            value = MiniMax(board, False, -math.inf, math.inf)
             #print("Val: " +str(value) )
             board[x] = " "
             if value > bestVal:
